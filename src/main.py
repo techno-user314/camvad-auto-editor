@@ -1,4 +1,6 @@
 import sys
+import webbrowser
+
 from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QStackedWidget,
@@ -18,27 +20,73 @@ class LandingPage(QWidget):
     def __init__(self):
         super().__init__()
         label_container = HBox()
-        label_container.setStyleSheet("font-size: 25pt; font-weight: bold;")
+        label_container.setStyleSheet("""
+            QLabel {
+                background: #333;
+                border-bottom: 4px solid #444;
+                border-radius: 0px;
+                font-size: 35px;
+                font-weight: bold;
+                padding-left: 100px;
+                padding-right: 100px;
+                padding-top: 35px;
+                padding-bottom: 35px;
+            }
+        """)
         label_container.add_stretch(1)
         label_container.add_widget(QLabel("Welcome to CamVAD!"), stretch=1)
         label_container.add_stretch(1)
 
         button_container = HBox()
+        button_container.layout.setSpacing(35)
+        button_container.setStyleSheet("""
+            QPushButton { 
+                background: #222;
+                border: 2px solid #666; 
+                border-radius: 5px;
+                padding: 15px;
+            }
+            QPushButton:hover {
+                border: 2px solid #ff6600;
+                background: #333;
+            }
+        """)
         buttons = [QPushButton("Quick Start"),
                    QPushButton("Website"),
                    QPushButton("User Guide")]
-        for button in buttons:
+        button_actions = [self._quick_start, self._website, self._user_guide]
+        for button, action in zip(buttons, button_actions):
             button_container.add_widget(button, stretch=1)
+            button.clicked.connect(action)
 
         layout_0 = VBox()
+        self.textbox = QTextBrowser()
+        self.textbox.setStyleSheet("""
+            QTextBrowser { 
+                background: #222;
+                border: 3px dotted #00bbbb;
+                border-radius: 5px;
+                padding: 15px;
+            }
+        """)
+        self._quick_start()
         layout_0.add_widget(label_container)
         layout_0.add_widget(button_container)
-        layout_0.add_widget(QTextBrowser())
+        layout_0.add_widget(self.textbox)
 
         layout = QHBoxLayout(self)
         layout.addStretch(1)
         layout.addWidget(layout_0, stretch=16)
         layout.addStretch(1)
+
+    def _quick_start(self):
+        self.textbox.setPlainText("Quick Start Helper Coming Soon!")
+
+    def _website(self):
+        webbrowser.open("https://github.com/techno-user314/camvad-editor/")
+
+    def _user_guide(self):
+        self.textbox.setPlainText("Embedded User Guide Coming Soon! (see website for now)")
 
 # Audio file selection page
 class FileSelectionPage(QWidget):
@@ -51,7 +99,6 @@ class FileSelectionPage(QWidget):
             audio_container.setStyleSheet("QLabel { max-width: 200px; }")
             audio_container.add_widget(QLabel(f"Mic for Person #{i + 1}"), stretch=1)
             audio_container.add_widget(self.buttons[i], stretch=1)
-            audio_container.add_stretch(1)
 
         layout_0 = VBox()
         title = QLabel("Select audio files")
@@ -72,43 +119,59 @@ class FileSelectionPage(QWidget):
 class VADSettingsPage(QWidget):
     def __init__(self):
         super().__init__()
-        layout = QVBoxLayout(self)
+        label_container = HBox()
+        label_container.setStyleSheet("""
+                    QLabel {
+                        border-bottom: 4px solid #444;
+                        border-top: 4px solid #444;
+                        border-radius: 0px;
+                        font-size: 35px;
+                        font-weight: bold;
+                    }
+                """)
+        label_container.add_stretch(1)
+        label_container.add_widget(QLabel("Coming Soon!"), stretch=1)
+        label_container.add_stretch(1)
 
-        label_container = QWidget()
-        label_layout = QHBoxLayout(label_container)
-        overview_label = QLabel("Coming Soon")
-        overview_label.setStyleSheet("font-size: 25pt; font-weight: bold;")
-        label_layout.addStretch(1)
-        label_layout.addWidget(overview_label, stretch=2)
-        label_layout.addStretch(1)
+        layout_0 = VBox()
+        layout_0.add_widget(label_container)
 
-        layout.addWidget(label_container)
+        layout = QHBoxLayout(self)
+        layout.addStretch(1)
+        layout.addWidget(layout_0, stretch=16)
+        layout.addStretch(1)
 
 # Settings for editing style
 class EditorSettingsPage(QWidget):
     def __init__(self):
         super().__init__()
-        layout = QVBoxLayout(self)
+        label_container = HBox()
+        label_container.setStyleSheet("""
+                    QLabel {
+                        border-bottom: 4px solid #444;
+                        border-top: 4px solid #444;
+                        border-radius: 0px;
+                        font-size: 35px;
+                        font-weight: bold;
+                    }
+                """)
+        label_container.add_stretch(1)
+        label_container.add_widget(QLabel("Coming Soon!"), stretch=1)
+        label_container.add_stretch(1)
 
-        label_container = QWidget()
-        label_layout = QHBoxLayout(label_container)
-        overview_label = QLabel("Coming Soon")
-        overview_label.setStyleSheet("font-size: 25pt; font-weight: bold;")
-        label_layout.addStretch(1)
-        label_layout.addWidget(overview_label, stretch=2)
-        label_layout.addStretch(1)
+        layout_0 = VBox()
+        layout_0.add_widget(label_container)
 
-        layout.addWidget(label_container)
+        layout = QHBoxLayout(self)
+        layout.addStretch(1)
+        layout.addWidget(layout_0, stretch=16)
+        layout.addStretch(1)
 
 # Creation page
 class CreateEditPage(QWidget):
-    def __init__(self, create_function):
+    def __init__(self, editing_function):
         super().__init__()
-        layout = QVBoxLayout()
-        layout.setSpacing(20)
-
-        self.create = QPushButton("Start Editing")
-        self.create.clicked.connect(create_function)
+        self.create = QPushButton("Start Auto-Editing")
         self.create.setStyleSheet("""
             QPushButton {
                 background-color: #ff6600;
@@ -122,9 +185,20 @@ class CreateEditPage(QWidget):
                 background-color: #ff8822;
             }
         """)
+        self.create.clicked.connect(editing_function)
 
-        layout.addWidget(self.create)
-        self.setLayout(layout)
+        button_container = HBox()
+        button_container.add_stretch(1)
+        button_container.add_widget(self.create, stretch=1)
+        button_container.add_stretch(1)
+
+        layout_0 = VBox()
+        layout_0.add_widget(button_container)
+
+        layout = QHBoxLayout(self)
+        layout.addStretch(1)
+        layout.addWidget(layout_0, stretch=16)
+        layout.addStretch(1)
 
 # === Main Layout ===
 class MainWindow(QWidget):
