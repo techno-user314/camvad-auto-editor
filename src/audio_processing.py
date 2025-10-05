@@ -7,6 +7,13 @@ class Cam:
     C1 = 1
     C2 = 2
 
+# === SIMPLE AUDIO PROCESSING ===
+def normalize_audio(audio):
+    max_val = np.max(np.abs(audio))
+    if max_val == 0:
+        return audio
+    return audio / max_val
+    
 # === VOICE DETECTION AND PROCESSING ===
 def voice_detect(speaker1_audio, speaker2_audio, min_len, frame_len,
                  threshold, dominance):
