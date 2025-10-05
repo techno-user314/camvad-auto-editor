@@ -60,15 +60,16 @@ class Editor:
         self.sample_rate = sr1
 
     def process_audio(self):
-        # === CONVERT TO MONO AND SYNC ===
-        if self.audio_file1.ndim > 1:
-            audio1 = np.mean(self.audio_file1, axis=1)
-        else:
-            audio1 = self.audio_file1
-        if self.audio_file2.ndim > 1:
-            audio2 = np.mean(self.audio_file2, axis=1)
-        else:
-            audio2 = self.audio_file2
+        # === CONVERT TO MONO, NORMALIZE, AND SYNC ===
+        audio1 = self.audio_file1
+        audio2 = self.audio_file2
+        if audio1.ndim > 1:
+            audio1 = np.mean(audio1, axis=1)
+        if audio2.ndim > 1:
+            audio2 = np.mean(audio2, axis=1)
+
+        audio1 = normalize_audio(audio1)
+        audio2 = normalize_audio(audio2)
 
         # Sync lengths
         min_len = min(len(audio1), len(audio2))
