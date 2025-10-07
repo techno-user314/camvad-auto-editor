@@ -17,15 +17,20 @@ def get_cuts_from_frames(frames):
     for i in range(1, len(frames)):
         if frames[i] != current_cam:
             duration = i - start_index
-            #cuts.append((start_index, duration, current_cam))
-            cuts.append(start_index)
+            match current_cam:
+                case Cam.C1:
+                    cam_name = "Close-up 1"
+                case Cam.C2:
+                    cam_name = "Close-up 2"
+                case Cam.WIDE:
+                    cam_name = "Wide"
+            cuts.append((start_index, duration, cam_name))
             start_index = i
             current_cam = frames[i]
 
     # Add the final cut
     duration = len(frames) - start_index
-    #cuts.append((start_index, duration, current_cam.value))
-    cuts.append(start_index)
+    cuts.append((start_index, duration, current_cam.value))
     return cuts
 
 
@@ -177,21 +182,22 @@ class Editor:
         markers = make_elem("markers")
         sequence.append(markers)
 
-        for i, frame in enumerate(cuts, start=1):
+        marker_num = 0
+        for start_frame, duration, camera in cuts:
+            marker_num += 1
             marker = make_elem("marker")
-            marker.append(make_elem("comment", f"Marker {i}"))
-            marker.append(make_elem("in", str(frame)))
-            marker.append(make_elem("out", str(frame)))
-            marker.append(make_elem("name", f"Marker {i}"))
-            marker.append(make_elem("color", "Red"))
+            marker.append(make_elem("name", f"Marker {marker_num}"))
+            #marker.append(make_elem("color", "Red"))
+            marker.append(make_elem("comment", camera))
+            marker.append(make_elem("in", str(start_frame)))
+            marker.append(make_elem("out", str(start_frame)))
             markers.append(marker)
 
         # Write to file
         tree = ET.ElementTree(xmeml)
-        ET.indent(tree, space="  ", level=0)  # Python 3.9+
+        ET.indent(tree, space="  ", level=0)
         tree.write("premiere_markers.xml", encoding="utf-8", xml_declaration=True)
         print("XML file 'premiere_markers.xml' created successfully.")
-
 
 #edittest = Editor(None)
 #edittest.load_audio("./cam1.wav", "./cam2.wav")
