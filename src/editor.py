@@ -30,7 +30,7 @@ def get_cuts_from_frames(frames):
 
     # Add the final cut
     duration = len(frames) - start_index
-    cuts.append((start_index, duration, current_cam.value))
+    cuts.append((start_index, duration, cam_name))
     return cuts
 
 
@@ -99,12 +99,12 @@ class Editor:
         # === PROCESSING - Optimal Cutting ===
         frames = list(zip(speaker1_active, speaker2_active))
         score, _, cf = dp_edit(frames,
-                                            self.close_cam_reward,
-                                            self.wide_reward,
-                                            self.miss_speaker_penalty,
-                                            self.cut_splits,
-                                            self.cut_penalties,
-                                            stride=5, max_l=300
+                               self.close_cam_reward,
+                               self.wide_reward,
+                               self.miss_speaker_penalty,
+                               self.cut_splits,
+                               self.cut_penalties,
+                               stride=5, max_l=300
         )
         self.cam_frames = cf
 
@@ -128,7 +128,7 @@ class Editor:
         xmeml.append(sequence)
 
         sequence.append(make_elem("name", "CamVAD Exported Cut List"))
-        sequence.append(make_elem("duration", str(max(cuts) + 100)))
+        sequence.append(make_elem("duration", str(max(start for start, _, _ in cuts) + 100)))
 
         # <rate>
         rate = make_elem("rate")
