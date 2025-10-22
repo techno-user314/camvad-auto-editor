@@ -1,5 +1,5 @@
+import os
 import soundfile as sf
-import xml.etree.ElementTree as ET
 
 from audio_processing import *
 
@@ -32,7 +32,6 @@ def get_cuts_from_frames(frames):
     duration = len(frames) - start_index
     cuts.append((start_index, duration, cam_name))
     return cuts
-
 
 class Editor:
     def __init__(self, data):
@@ -99,107 +98,64 @@ class Editor:
         # === PROCESSING - Optimal Cutting ===
         frames = list(zip(speaker1_active, speaker2_active))
         score, _, cf = dp_edit(frames,
-                               self.close_cam_reward,
-                               self.wide_reward,
-                               self.miss_speaker_penalty,
-                               self.cut_splits,
-                               self.cut_penalties,
-                               stride=5, max_l=300
+                                self.close_cam_reward,
+                                self.wide_reward,
+                                self.miss_speaker_penalty,
+                                self.cut_splits,
+                                self.cut_penalties,
+                                stride=5, max_l=300
         )
         self.cam_frames = cf
 
-    def export_cuts(self, width = 1920, height = 1080):
-        # === EXPORT STEP 1 - Create a Cut List ===
+    def export_cuts(self, output_dir="."):
+        """
+        Export an EDL file for each camera based on the list of cuts.
+
+        Parameters:
+        - output_dir: Directory to save the EDL files
+        """
         cuts = get_cuts_from_frames(self.cam_frames)
 
-        # === EXPORT STEP 2 - Save Cuts as XML File ===
-        def make_elem(tag, text=None, attrib=None):
-            el = ET.Element(tag)
-            if text is not None:
-                el.text = str(text)
-            if attrib:
-                el.attrib = attrib
-            return el
+        # Group cuts by camera name
+        cams = {}
+        for start, duration, cam in cuts:
+            cams.setdefault(cam, []).append((start, duration))
 
-        xmeml = ET.Element("xmeml", version="5")
+        def frames_to_timecode(frame):
+            total_seconds = frame / self.fps
+            hours = int(total_seconds // 3600)
+            minutes = int((total_seconds % 3600) // 60)
+            seconds = int(total_seconds % 60)
+            frames = int(round((total_seconds - int(total_seconds)) * self.fps))
+            return f"{hours:02}:{minutes:02}:{seconds:02}:{frames:02}"
 
-        # <sequence>
-        sequence = make_elem("sequence", attrib={"id": "sequence-1"})
-        xmeml.append(sequence)
+        for cam_name, cam_cuts in cams.items():
+            edl_lines = []
+            edl_lines.append(f"TITLE: Sequence - {cam_name}")
+            edl_lines.append("FCM: NON-DROP FRAME\n")
 
-        sequence.append(make_elem("name", "CamVAD Exported Cut List"))
-        sequence.append(make_elem("duration", str(max(start for start, _, _ in cuts) + 100)))
+            for i, (start_frame, duration) in enumerate(cam_cuts, start=1):
+                video_in = frames_to_timecode(start_frame)
+                video_out = frames_to_timecode(start_frame + duration - 1)
 
-        # <rate>
-        rate = make_elem("rate")
-        rate.append(make_elem("timebase", self.fps))
-        rate.append(make_elem("ntsc", "FALSE"))
-        sequence.append(rate)
+                edit_num = f"{i:03}"
+                reel_name = "AX"
+                track = "V"
+                transition = "C"
 
-        # <media>
-        media = make_elem("media")
-        sequence.append(media)
+                edl_lines.append(
+                    f"{edit_num}  {reel_name:<8} {track:<2} {transition:<2}  "
+                    f"{video_in} {video_out} {video_in} {video_out}"
+                )
+                edl_lines.append(f"* FROM CLIP NAME: {cam_name}\n")
 
-        # <media><video>
-        video = make_elem("video")
-        media.append(video)
-
-        format_el = make_elem("format")
-        video.append(format_el)
-
-        sample_char = make_elem("samplecharacteristics")
-        format_el.append(sample_char)
-
-        rate_el = make_elem("rate")
-        rate_el.append(make_elem("timebase", self.fps))
-        rate_el.append(make_elem("ntsc", "FALSE"))
-        sample_char.append(rate_el)
-
-        sample_char.append(make_elem("width", width))
-        sample_char.append(make_elem("height", height))
-        sample_char.append(make_elem("anamorphic", "FALSE"))
-        sample_char.append(make_elem("pixelaspectratio", "square"))
-        sample_char.append(make_elem("fielddominance", "none"))
-
-        video.append(make_elem("track"))  # empty track
-
-        # <media><audio>
-        audio = make_elem("audio")
-        media.append(audio)
-
-        audio_format = make_elem("format")
-        audio.append(audio_format)
-
-        audio_sample_char = make_elem("samplecharacteristics")
-        audio_format.append(audio_sample_char)
-
-        audio_sample_char.append(make_elem("depth", "16"))
-        audio_sample_char.append(make_elem("samplerate", "48000"))
-
-        audio.append(make_elem("track"))  # empty track
-
-        # <markers>
-        markers = make_elem("markers")
-        sequence.append(markers)
-
-        marker_num = 0
-        for start_frame, duration, camera in cuts:
-            marker_num += 1
-            marker = make_elem("marker")
-            marker.append(make_elem("name", f"Marker {marker_num}"))
-            #marker.append(make_elem("color", "Red"))
-            marker.append(make_elem("comment", camera))
-            marker.append(make_elem("in", str(start_frame)))
-            marker.append(make_elem("out", str(start_frame)))
-            markers.append(marker)
-
-        # Write to file
-        tree = ET.ElementTree(xmeml)
-        ET.indent(tree, space="  ", level=0)
-        tree.write("premiere_markers.xml", encoding="utf-8", xml_declaration=True)
-        print("XML file 'premiere_markers.xml' created successfully.")
+            # Write the EDL file for this camera
+            filename = f"Sequence_{cam_name.replace(' ', '_')}.edl"
+            filepath = os.path.join(output_dir, filename)
+            with open(filepath, "w") as f:
+                f.write("\n".join(edl_lines))
 
 #edittest = Editor(None)
-#edittest.load_audio("./cam1.wav", "./cam2.wav")
+#edittest.load_audio("./audio_cam1.wav", "./audio_cam2.wav")
 #edittest.process_audio()
-#edittest.export_cuts()
+#edittest.export_cuts_test()
