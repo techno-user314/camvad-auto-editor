@@ -136,7 +136,7 @@ class Editor:
 
             for i, (start_frame, duration) in enumerate(cam_cuts, start=1):
                 video_in = frames_to_timecode(start_frame)
-                video_out = frames_to_timecode(start_frame + duration - 1)
+                video_out = frames_to_timecode(start_frame + duration)
 
                 edit_num = f"{i:03}"
                 reel_name = "AX"
