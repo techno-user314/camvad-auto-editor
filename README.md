@@ -13,7 +13,7 @@ CamVAD Editor assists with video editing for setups with multiple cameras and pe
 ## What CamVAD Does
 CamVAD needs an individual audio recording for both of the speakers in the video clip. Given the audio recordings, it generates a cut sequence of what shot to use (picking between close-up shots vs wide shots, and what person to focus on) based on who talks when. This sequence is then exported to Adobe Premiere Pro, where you can combine the camera shots to make a fully edited episode.
 ## Setup
-Follow the [installation instructions](#Installing%20CamVAD) to setup CamVAD on your PC.
+Follow the [installation instructions](#installing-camvad) to setup CamVAD on your PC.
 ## Quick Start
 Once CamVAD is open, to create an edit:
  1. Go to the "File Selection" page in the left navigation bar.  
@@ -24,7 +24,7 @@ Once CamVAD is open, to create an edit:
  7. In each EDL sequence, replace the source with the desired camera angle.
  8. Combine each sequence from the EDL files into a master sequence.
 ## Other Settings in CamVAD
-*This feature is coming soon to the UI, for now, the extra settings are declared in Editor.__init__() of editor.py*
+***This feature is coming soon to the UI, for now, the extra settings are declared in Editor.__init__() of editor.py***  
 You will notice that in the CamVAD UI, there are several extra pages included in the navigation bar.  
 These give access to advanced settings, and it is recommended that you leave them at their default values. However, in some cases, adjusting these can create a better edit, so they are provided for the adventurous user. Fair warning: They can take some experimentation to get right. 
 # Installing CamVAD
