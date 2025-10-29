@@ -34,4 +34,15 @@ You will notice that in the CamVAD UI, there are several extra pages included in
 These give access to advanced settings, and it is recommended that you leave them at their default values. However, in some cases, adjusting these can create a better edit, so they are provided for the adventurous user. Fair warning: They can take some experimentation to get right. 
 # Installing CamVAD
 ## From a Release
+1. Download the zip for your operating system from the [releases page](https://github.com/techno-user314/camvad-editor/releases).
+2. Unpack the zip file.
+3. Navigate into the unpacked file and run the CamVAD executable.
 ## From Source
+1. Set up a Python environment (Python version >3.13)
+2. Install dependancies:
+   - NumPy
+   - Pandas
+   - PyQt6
+   - SoundFile
+4. Download the source code
+5. Unpack source, and run main.py
